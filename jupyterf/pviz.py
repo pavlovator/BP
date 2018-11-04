@@ -2,8 +2,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import random
 
-
-
 class Pollutant:
     def __init__(self, path, name):
         self.df = pd.read_csv(path, sep=';')
@@ -54,6 +52,12 @@ class Pollutant:
             df_station = df_station[df_station['dtvalue'].dt.year == year]
         return df_station.groupby(df_station["dtvalue"].dt.month).mean()
 
+    def dayProfile(self, station, year=None):
+        df_station = self.getStationDF(station).dropna()
+        if year is not None:
+            df_station = df_station[df_station['dtvalue'].dt.year == year]
+        return df_station.groupby(df_station["dtvalue"].dt.weekday).mean()
+
     def commonStation(self, particles):
         '''
         :param particles: list Particles
@@ -82,6 +86,9 @@ class Pollutant:
         del avarage['dtvalue']
         return avarage
 
+    def get_training_data(self, station):
+        df_station = self.getStationDF(station)
+
 
 
 
@@ -108,7 +115,7 @@ def visualizeTimeProfile(step, pollutants, station, year=None, save=""):
     '''
     if type(pollutants) != list:
         raise Exception("argument 'particles' is not a list")
-    if step not in 'hours months'.split():
+    if step not in 'hours months days'.split():
         raise Exception('time step: {:} definied'.format(step))
     for p in pollutants:
         line_color = "#{:06x}".format(random.randint(0, 0xFFFFFF))
@@ -116,6 +123,8 @@ def visualizeTimeProfile(step, pollutants, station, year=None, save=""):
             y = p.hourProfile(station)
         elif step == 'months':
             y = p.monthProfile(station)
+        elif step == 'days':
+            y = p.dayProfile(station)
         plt.plot(y.index.values, y[station].values, color=line_color, label = p.getName())
     plt.xticks(y.index.values)
     plt.title(station)
