@@ -53,6 +53,11 @@ class Pollutant:
         return df_station.groupby(df_station["dtvalue"].dt.month).mean()
 
     def dayProfile(self, station, year=None):
+        '''
+        :param station: nazov stanice
+        :param year: pre ktory rok, ak nieje uvedeny tak pre vsetky
+        :return: dataframe tyzdenneho profilu
+        '''
         df_station = self.getStationDF(station).dropna()
         if year is not None:
             df_station = df_station[df_station['dtvalue'].dt.year == year]
@@ -86,8 +91,6 @@ class Pollutant:
         del avarage['dtvalue']
         return avarage
 
-    def get_training_data(self, station):
-        df_station = self.getStationDF(station)
 
 
 
