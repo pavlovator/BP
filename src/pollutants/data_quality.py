@@ -33,7 +33,7 @@ class Calc:
         return np.nanpercentile(self.df[feature], 25)
 
     def quartile3(self, feature):
-        return np.nanpercentile(self.df[feature], 25)
+        return np.nanpercentile(self.df[feature], 75)
 
     def mode(self, feature):
         return self.df[feature].mode().values[0]
@@ -76,11 +76,39 @@ class Calc:
                 self.mode2Freq(feature),
                 round(self.mode2Perc(feature)*100,2)]
 
+    def coverageOfFeatures(self):
+        self.df['dtvalue'] = pd.to_datetime(self.df['dtvalue'])
+        by_year = self.df.groupby(self.df['dtvalue'].dt.year).apply(lambda x: x.notnull().mean() * 100)
+        del by_year['dtvalue']
+        return by_year
+
+    def nomofmissingPreYear(self):
+        self.df['dtvalue'] = pd.to_datetime(self.df['dtvalue'])
+        by_year = self.df.groupby(self.df['dtvalue'].dt.year).apply(lambda x: x.notnull().size())
+        del by_year['dtvalue']
+        return by_year
+
+    def percentageOfMissingLoners(self):
+        for label in self.df.columns:
+            counter = 0
+            last = np.nan
+            next = np.nan
+            col = self.df[label]
+            if label == 'dtvalue':
+                continue
+            for i in range(len(col)-1):
+                current = col[i]
+                next = col[i+1]
+                if np.isnan(current) and not np.isnan(last) and not np.isnan(next):
+                    counter += 1
+                last = current
+            print(label, counter/len(self.df)*100, counter)
+
 
 def createLatexABTTable(path):
     dataset = Calc(path)
     s = ""
-    for feature in ['pol','ttt','td','ff','pppp']:
+    for feature in ['pm10','no2','ttt','td','ff','pppp']:
         s += "{:} & {:} & {:} & {:} & {:} & {:} & {:} & {:} & {:} & {:} & {:}".format(feature,*dataset.forContinuous(feature))
     s += "{:} & {:} & {:} & {:} & {:} & {:} & {:} & {:} & {:} & {:}".format("dd",*dataset.forCategorical("dd"))
     return s
@@ -89,6 +117,6 @@ def createLatexABTTable(path):
 
 
 
-no2m = "no2m.csv"
-pm10m = "pm10m.csv"
-o3m = "o3m.csv"
+
+
+trnavske = Calc("trnavskemyto.csv")

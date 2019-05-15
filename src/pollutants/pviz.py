@@ -1,5 +1,9 @@
 import matplotlib.pyplot as plt
 import random
+
+import matplotlib
+
+matplotlib.use('Qt5Agg')
 import pollutants as ps
 
 def visualizeTimeProfile(step, pollutants, station, year=None, save=""):
@@ -26,7 +30,7 @@ def visualizeTimeProfile(step, pollutants, station, year=None, save=""):
     plt.xticks(y.index.values)
     plt.title(station)
     plt.grid(True)
-    plt.ylabel("concentrations")
+    plt.ylabel(r'$\mu g/m^{3}$')
     if year is not None:
         step = "{:} {:}".format(step, year)
     plt.xlabel(step)
@@ -38,29 +42,30 @@ def visualizeTimeProfile(step, pollutants, station, year=None, save=""):
 
 
 def visualizeCoverage(pollutants):
-    fig = plt.figure()
-    fig.subplots_adjust(hspace=-0.6, wspace=0.15)
-    for i,pol in enumerate(pollutants):
-        ax = fig.add_subplot(2, 2, i+1)
-        ax.set_xticks([])
-        ax.set_yticks([])
-        heatmap = ax.imshow(pol.getCoverageOverall().values)
-        ax.set_title(pol.getName())
-        ax.set_xlabel("Stations")
-        ax.set_ylabel("Years")
-
+    fig, axes = plt.subplots(nrows=2, ncols=2)
+    fig.subplots_adjust(hspace=-1, wspace=0)
+    plt.setp(axes,xticks=[])
+    for i, j, polidx in ((0, 0, 0), (0, 1, 1), (1, 0, 2), (1, 1, 3)):
+        pol = pollutants[polidx]
+        minimum = pol.df.loc[0,'dtvalue'].year
+        maximum = pol.df.loc[len(pol.df)-1,'dtvalue'].year
+        cov = pol.getCoverageOverall().values
+        plt.sca(axes[i, j])
+        plt.yticks([0,len(cov)-1], [minimum,maximum], fontsize=7)
+        plt.xticks([])
+        heatmap = axes[i,j].imshow(cov)
+        axes[i,j].set_title(pol.getMathTextName())
+        axes[i,j].set_xlabel("Stations")
+    fig.tight_layout()
     fig.subplots_adjust(right=0.8)
-    cbar_ax = fig.add_axes([0.85, 0.25, 0.02, 0.5])
+    cbar_ax = fig.add_axes([0.85, 0.3, 0.02, 0.4])
     fig.colorbar(heatmap, cax=cbar_ax)
 
-    plt.savefig('coverage.png', dpi=900)
+    plt.savefig('coverage.png', dpi=1200)
     plt.show()
-    return cbar, fig
 
 
 no2 = ps.Pollutant("../data/pollutants/NO2_2003_2017.csv", "NO2")
-o3 = ps.Pollutant("../data/pollutants/O3_2003_2017.csv", "O3")
+#o3 = ps.Pollutant("../data/pollutants/O3_2003_2017.csv", "O3")
 pm10 = ps.Pollutant("../data/pollutants/PM10_2003_2017.csv", "PM10")
-pm25 = ps.Pollutant("../data/pollutants/pm25_2003_2017.csv","PM2.5")
-
-cbar,fig = visualizeCoverage([no2,o3,pm10,pm25])
+#pm25 = ps.Pollutant("../data/pollutants/pm25_2003_2017.csv","PM2.5")

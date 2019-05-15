@@ -12,6 +12,17 @@ class Pollutant:
         '''
         return self.name
 
+    def getMathTextName(self):
+        '''
+        :return: Math text name for pollutant
+        '''
+        idx = 0
+        for i in range(len(self.name)):
+            if self.name[i].isnumeric():
+                idx = i
+                break
+        return r'$'+self.name[:idx]+'_{'+self.name[idx:] +'}$'
+
     def getStations(self):
         '''
         :return: nazvy vsetkych stanic
@@ -101,8 +112,3 @@ class Pollutant:
                 result[station] = points #15 rokov
         return result
 
-
-
-NO2 = Pollutant("../data/pollutants/NO2_2003_2017.csv","NO2")
-PM10 = Pollutant("../data/pollutants/PM10_2003_2017.csv","PM10")
-O3_rep = Pollutant("../data/pollutants/O3_repaired_2003_2017.csv","O3")
